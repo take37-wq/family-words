@@ -1,50 +1,32 @@
+// server.js
 const express = require('express');
-const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const cors = require('cors');
 
+app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-// 状態管理
 let words = [];
-let submittedUsers = [];
 
-function makeSentence(words) {
-  let sentence = words.join(' ');
-  sentence = sentence.charAt(0).toUpperCase() + sentence.slice(1);
-  if (!/[。.!?！？]$/.test(sentence)) {
-    sentence += '。';
-  }
-  return sentence;
-}
+app.post('/submit', (req, res) => {
+  const { nickname, word } = req.body;
 
-app.post('/api/word', (req, res) => {
-  let { nickname, word } = req.body;
-  nickname = nickname.trim().toLowerCase();
-
-  if (submittedUsers.includes(nickname)) {
-    return res.status(400).json({ message: 'このユーザーはすでに送信しました！' });
+  if (!nickname || !word) {
+    return res.status(400).json({ message: 'ニックネームと単語が必要です' });
   }
 
-  submittedUsers.push(nickname);
-  words.push(word.trim());
+  words.push({ nickname, word });
 
   if (words.length === 3) {
-    const sentence = makeSentence(words);
-    return res.json({ message: '完成！', sentence });
+    const sentence = words.map(w => w.word).join(' ');
+    const result = { sentence, words: [...words] };
+    words = []; // 使い終わったらリセット
+    return res.json({ complete: true, result });
   }
 
-  res.json({ message: '受け取りました！' });
+  res.json({ complete: false, count: words.length });
 });
 
-// データをリセットする（例：ボタンから呼ばれる用）
-app.post('/api/reset', (req, res) => {
-  words = [];
-  submittedUsers = [];
-  res.json({ message: 'リセットしました' });
-});
-
-app.listen(PORT, () => {
-  console.log(`✅ サーバーが http://localhost:${PORT} で起動しました`);
+app.listen(3000, () => {
+  console.log('Server running on http://localhost:3000');
 });
