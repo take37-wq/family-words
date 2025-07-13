@@ -3,46 +3,46 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ▼ 保存用メモリ（1人1回制限）
-let words = [];
-let submittedUsers = [];
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 状態管理
+let words = [];
+let submittedUsers = [];
+
+function makeSentence(words) {
+  let sentence = words.join(' ');
+  sentence = sentence.charAt(0).toUpperCase() + sentence.slice(1);
+  if (!/[。.!?！？]$/.test(sentence)) {
+    sentence += '。';
+  }
+  return sentence;
+}
+
 app.post('/api/word', (req, res) => {
   let { nickname, word } = req.body;
-
-  nickname = nickname.trim().toLowerCase(); // ニックネームを正規化
+  nickname = nickname.trim().toLowerCase();
 
   if (submittedUsers.includes(nickname)) {
     return res.status(400).json({ message: 'このユーザーはすでに送信しました！' });
   }
 
   submittedUsers.push(nickname);
-  words.push(word);
+  words.push(word.trim());
 
   if (words.length === 3) {
-    const sentence = words.join(' ');
+    const sentence = makeSentence(words);
     return res.json({ message: '完成！', sentence });
   }
 
   res.json({ message: '受け取りました！' });
 });
 
-app.get('/api/sentence', (req, res) => {
-  if (words.length === 3) {
-    const sentence = words.join(' ');
-    res.json({ sentence });
-  } else {
-    res.json({ sentence: null });
-  }
-});
-
+// データをリセットする（例：ボタンから呼ばれる用）
 app.post('/api/reset', (req, res) => {
   words = [];
   submittedUsers = [];
-  res.json({ message: 'リセットしました！' });
+  res.json({ message: 'リセットしました' });
 });
 
 app.listen(PORT, () => {
