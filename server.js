@@ -1,41 +1,48 @@
-// server.js
 const express = require('express');
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ▼ 保存用メモリ（1人1回制限）
+let words = [];
+let submittedUsers = [];
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/hello', (req, res) => {
-  res.send('サーバーは動いています！');
-});
-// 単語データを一時的に保存（あとでリセットできるように）
-let wordEntries = [];
-
-// POST /api/word を受け取る
 app.post('/api/word', (req, res) => {
-  const { nickname, word } = req.body;
+  let { nickname, word } = req.body;
 
-  if (!nickname || !word) {
-    return res.status(400).json({ message: 'ニックネームと単語を送ってください' });
+  nickname = nickname.trim().toLowerCase(); // ニックネームを正規化
+
+  if (submittedUsers.includes(nickname)) {
+    return res.status(400).json({ message: 'このユーザーはすでに送信しました！' });
   }
 
-  // データを保存
-  wordEntries.push({ nickname, word });
+  submittedUsers.push(nickname);
+  words.push(word);
 
-  // 3人集まったら文を生成する（仮で結合）
-  if (wordEntries.length === 3) {
-    const sentence = wordEntries.map(entry => entry.word).join(' ');
-    const message = `みんなの文：${sentence}`;
-
-    // 一時保存した単語をリセット
-    wordEntries = [];
-
-    return res.json({ message });
+  if (words.length === 3) {
+    const sentence = words.join(' ');
+    return res.json({ message: '完成！', sentence });
   }
 
-  res.json({ message: '受け取りました！他の人の入力を待っています。' });
+  res.json({ message: '受け取りました！' });
+});
+
+app.get('/api/sentence', (req, res) => {
+  if (words.length === 3) {
+    const sentence = words.join(' ');
+    res.json({ sentence });
+  } else {
+    res.json({ sentence: null });
+  }
+});
+
+app.post('/api/reset', (req, res) => {
+  words = [];
+  submittedUsers = [];
+  res.json({ message: 'リセットしました！' });
 });
 
 app.listen(PORT, () => {

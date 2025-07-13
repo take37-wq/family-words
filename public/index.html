@@ -1,27 +1,21 @@
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>合言葉でログイン</title>
-</head>
+<head><meta charset="UTF-8"><title>合言葉入力</title></head>
 <body>
-  <h1>家族サイトへようこそ</h1>
-  <p>合言葉を入力してください：</p>
-  <input type="password" id="password" placeholder="合言葉を入力" />
-  <button onclick="checkPassword()">送信</button>
+  <h1>合言葉を入力</h1>
+  <input id="code" placeholder="合言葉">
+  <button onclick="go()">参加</button>
 
   <script>
-    const correctPassword = "1234";
-    function checkPassword() {
-      const input = document.getElementById('password').value;
-      if (input === correctPassword) {
-        window.location.href = "/main.html";
+    function go() {
+      const code = document.getElementById('code').value;
+      if (code === '1234') {
+        window.location.href = 'main.html';
       } else {
-        alert("合言葉がちがいます！");
+        alert('合言葉が違います');
       }
     }
   </script>
 </body>
 </html>
-

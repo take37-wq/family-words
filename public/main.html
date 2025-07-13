@@ -1,45 +1,16 @@
+<!-- public/main.html -->
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>単語を入力</title>
-</head>
+<head><meta charset="UTF-8"><title>単語入力</title></head>
 <body>
-  <h1>単語を入力してください</h1>
-
-  <label>ニックネーム：</label>
-  <input type="text" id="nickname" placeholder="たろう" /><br /><br />
-
-  <label>単語：</label>
-  <input type="text" id="word" placeholder="おいしい" /><br /><br />
-
+  <h1>単語を入力してね</h1>
+  <input id="nickname" placeholder="ニックネーム">
+  <input id="word" placeholder="単語">
   <button onclick="submitWord()">送信</button>
-
+  <button onclick="resetWords()">リセット</button>
   <p id="message"></p>
+  <p id="result"></p>
 
-  <script>
-    async function submitWord() {
-      const nickname = document.getElementById("nickname").value;
-      const word = document.getElementById("word").value;
-
-      if (!nickname || !word) {
-        alert("ニックネームと単語を入力してください");
-        return;
-      }
-
-      const response = await fetch("/api/word", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nickname, word })
-      });
-
-      const result = await response.json();
-      document.getElementById("message").textContent = result.message;
-
-      // 入力欄をリセット
-      document.getElementById("word").value = "";
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
